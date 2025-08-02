@@ -68,7 +68,7 @@
       const resultDiv = document.getElementById('result');
       resultDiv.innerHTML = "⏳ Génération...";
 
-      const res = await fetch("http://localhost:3000/generer-code", {
+      const res = await fetch("https://nextrade-server.onrender.com/generer-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminKey, offre, duree })
