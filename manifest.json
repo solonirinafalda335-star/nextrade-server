@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "NexTrade",
+  "version": "1.0",
+  "description": "Extension de signaux de trading avec activation par code",
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab",
+    "notifications",
+    "http://localhost:3000/"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon128.png",
+      "48": "icon128.png",
+      "128": "icon128.png"
+    },
+    "default_title": "NexTrade"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "128": "icon128.png"
+  }
+}

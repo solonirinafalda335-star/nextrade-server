@@ -1,0 +1,290 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  min-width: 420px;
+  max-width: 450px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.container {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+.logo-3d {
+  font-size: 28px;
+  font-weight: 900;
+  text-align: center;
+  color: #38bdf8;
+  text-shadow:
+    1px 1px 0 #0c4a6e,
+    2px 2px 0 #0c4a6e,
+    3px 3px 0 #0c4a6e;
+  margin-bottom: 20px;
+}
+
+button {
+  position: relative;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  z-index: 1;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+/* ✨ LUMIÈRE ANIMÉE */
+button::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transform: rotate(25deg);
+  animation: shine 3s infinite;
+  z-index: 0;
+}
+
+/* Texte embossé sur fond métallique */
+button span {
+  position: relative;
+  z-index: 1;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3),
+               -1px -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* 🥉 BRONZE */
+button.bronze {
+  background: linear-gradient(145deg, #5c4033, #cd7f32);
+  box-shadow: inset 0 0 1px #fff2,
+              0 3px 8px rgba(0, 0, 0, 0.6);
+  color: #fff;
+}
+
+/* 🥈 ARGENT */
+button.argent {
+  background: linear-gradient(145deg, #c0c0c0, #8f8f8f);
+  box-shadow: inset 0 0 1px #fff2,
+              0 3px 8px rgba(0, 0, 0, 0.6);
+  color: #222;
+}
+
+/* 🥇 OR */
+button.gold {
+  background: linear-gradient(145deg, #ffd700, #b8860b);
+  box-shadow: inset 0 0 1px #fff2,
+              0 3px 8px rgba(0, 0, 0, 0.6);
+  color: #3c2f00;
+}
+
+/* 🎯 Animation lumière */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(25deg);
+  }
+}
+
+/* Hover effet */
+button:hover {
+  transform: scale(1.03);
+  filter: brightness(1.1);
+}
+
+
+.offre-box {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-top: 15px;
+  padding: 0 10px;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.5s ease, padding 0.5s ease;
+}
+
+.offre-box.open {
+  max-height: 500px;
+  padding: 15px 10px;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  margin-top: 10px;
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.help {
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Aligner les boutons Bronze, Argent, Gold en colonne */
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 20px;
+}
+/* ✅ Liste des avantages */
+.avantages {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.avantages li {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.avantages li:last-child {
+  border-bottom: none;
+}
+
+/* ✅ Affichage du prix */
+.tarif {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+  color: #facc15; /* Jaune doux pour les tarifs */
+}
+.code-box {
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid #334155;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #f1f5f9;
+}
+
+.code-box a.whatsapp-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: #25D366;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.code-box a.whatsapp-link:hover {
+  text-decoration: underline;
+}
+.valider-btn {
+  margin-top: 10px;
+  padding: 10px;
+  background: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s ease;
+}
+
+.valider-btn:hover {
+  background: #15803d;
+}
+#inscription-section {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  margin-bottom: 20px;
+}
+
+#inscription-section input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+#btn-inscrire {
+  background-color: #38bdf8;
+  color: #0f172a;
+  font-weight: bold;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+}
+.message-motivant {
+  margin-top: 30px;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #f1f5f9;
+  background: linear-gradient(to right, #1e293b, #0f172a);
+  border-top: 1px solid #475569;
+  border-bottom: 1px solid #475569;
+  font-style: italic;
+}
+
+.footer-nextrade {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.8em;
+  color: #94a3b8;
+  padding-bottom: 10px;
+}
+.switch-form {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 0.9em;
+  color: #94a3b8;
+}
+
+.switch-form a {
+  color: #38bdf8;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.switch-form a:hover {
+  color: #0ea5e9;
+}

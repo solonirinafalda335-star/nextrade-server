@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>NEXTRADE Extension</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="logo-3d">NEXTRADE</h1>
+
+    <!-- SECTION INSCRIPTION -->
+    <div id="inscription-section">
+      <h2>Inscription</h2>
+      <label for="nom">Votre nom complet</label>
+      <input type="text" id="nom" placeholder="Entrez votre nom...">
+      <label for="motdepasse">Mot de passe</label>
+      <input type="password" id="motdepasse" placeholder="Entrez un mot de passe...">
+      <button id="btn-inscrire">S’inscrire</button>
+      <p class="switch-form">
+  🔑 Vous avez déjà un compte ? <a href="#" id="lien-connexion">Se connecter ici</a>
+</p>
+    </div>
+
+    <!-- SECTION ABONNEMENT -->
+    <div id="abonnement-section" style="display: none;">
+      <p id="bienvenue-msg" style="text-align: center; font-weight: bold;"></p>
+
+      <div class="buttons">
+        <button id="btn-bronze" class="bronze">🥉 Bronze</button>
+        <button id="btn-argent" class="argent">🥈 Argent</button>
+        <button id="btn-gold" class="gold">🥇 Gold</button>
+      </div>
+
+      <!-- Bronze -->
+      <div id="bronze-offre" class="offre-box">
+        <p><strong>🎯 Offre Bronze :</strong></p>
+        <ul class="avantages">
+          <li>📌 2 signaux scalping / jour</li>
+          <li>📌 1 signal day trading / jour</li>
+          <li>⏳ Accès limité aux fonctionnalités</li>
+          <li>📆 Durée : 30 jours</li>
+        </ul>
+        <p class="tarif">💰 <strong>10 USD / mois</strong></p>
+        <label>Code de validation :</label>
+        <input type="text" placeholder="Entrez votre code ici...">
+        <button onclick="validerCode(this)">Valider</button>
+        <div class="code-box">
+          <p><strong>Besoin de code pour s'abonner ?</strong></p>
+          <a href="https://wa.me/261342420197" target="_blank" class="whatsapp-link">
+            <img src="https://img.icons8.com/color/24/000000/whatsapp--v1.png" 
+                 alt="WhatsApp" 
+                 style="vertical-align: middle; margin-right: 8px;">
+            Cliquez ici pour nous écrire sur WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <!-- Argent -->
+      <div id="argent-offre" class="offre-box">
+        <p><strong>⚡ Offre Argent :</strong></p>
+        <ul class="avantages">
+          <li>📌 8 signaux / jour (scalping + day trading)</li>
+          <li>📈 1 conseil hebdomadaire exclusif</li>
+          <li>🚀 Support prioritaire</li>
+          <li>📆 Durée : 30 jours</li>
+        </ul>
+        <p class="tarif">💰 <strong>25 USD / mois</strong></p>
+        <label>Code de validation :</label>
+        <input type="text" placeholder="Entrez votre code ici...">
+        <button onclick="validerCode(this)">Valider</button>
+        <div class="code-box">
+          <p><strong>Besoin de code pour s'abonner ?</strong></p>
+          <a href="https://wa.me/261342420197" target="_blank" class="whatsapp-link">
+            <img src="https://img.icons8.com/color/24/000000/whatsapp--v1.png" 
+                 alt="WhatsApp" 
+                 style="vertical-align: middle; margin-right: 8px;">
+            Cliquez ici pour nous écrire sur WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <!-- Gold -->
+      <div id="gold-offre" class="offre-box">
+        <p><strong>🔥 Offre Gold :</strong></p>
+        <ul class="avantages">
+          <li>📌 Signaux illimités (scalping, day trading, swing)</li>
+          <li>📰 Signaux sur les news économiques</li>
+          <li>🎓 Coaching privé + Webinaires VIP</li>
+          <li>🏆 Accès total + alertes premium</li>
+          <li>📆 Durée : 30 jours</li>
+        </ul>
+        <p class="tarif">💰 <strong>50 USD / mois</strong></p>
+        <label>Code de validation :</label>
+        <input type="text" placeholder="Entrez votre code ici...">
+        <button onclick="validerCode(this)">Valider</button>
+        <div class="code-box">
+          <p><strong>Besoin de code pour s'abonner ?</strong></p>
+          <a href="https://wa.me/261342420197" target="_blank" class="whatsapp-link">
+            <img src="https://img.icons8.com/color/24/000000/whatsapp--v1.png" 
+                 alt="WhatsApp" 
+                 style="vertical-align: middle; margin-right: 8px;">
+            Cliquez ici pour nous écrire sur WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <!-- Bouton Se déconnecter -->
+      <div style="text-align: center; margin-top: 20px;">
+        <button id="btn-logout">Se déconnecter</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+    <!-- ... TON CODE EXISTANT CI-DESSUS ... -->
+
+  <!-- MESSAGE MOTIVANT POUR LE TRADING -->
+  <div class="message-motivant">
+    <p>🚀 Chaque décision compte. Tradez avec vision, restez discipliné et visez l’excellence avec NexTrade.</p>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer-nextrade">
+    <p>Powered by <strong>NexTrade</strong> © 2025</p>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
