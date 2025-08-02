@@ -11,34 +11,42 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.post('/generer-code', (req, res) => {
+app.use(express.static('public'));
+
+app.get('/admin', (req, res) => {
+  res.send('<h1>Page Admin fonctionne</h1><p>Test simple</p>');
+});
+
+// ✅ Génération de code avec stockage PostgreSQL
+app.post('/generer-code', async (req, res) => {
   const { offre, duree, adminKey } = req.body;
 
   if (adminKey !== 'admin123') {
-    return res.status(403).json({ success: false, message: "Clé admin incorrecte" });
+    return res.status(403).json({ success: false, message: "Clé admin invalide" });
   }
 
   if (!offre || !duree) {
-    return res.status(400).json({ success: false, message: "offre et durée sont requis" });
+    return res.status(400).json({ success: false, message: "Offre et durée requises" });
   }
 
-  const code = Math.random().toString(36).substr(2, 8).toUpperCase();
-  const maintenant = new Date();
-  const expiration = new Date(maintenant.getTime() + duree * 24 * 60 * 60 * 1000);
+  // 🔐 Générer un code aléatoire
+  const code = Math.random().toString(36).substring(2, 10).toUpperCase(); // Exemple: 8 caractères
 
-  licencesValides[code] = {
-    valid: true,
-    expiration: expiration.toISOString().split('T')[0],
-    deviceId: null,
-    offre
-  };
+  const now = new Date();
+  const expiration = new Date(now);
+  expiration.setDate(now.getDate() + parseInt(duree));
 
-  return res.json({
-    success: true,
-    code,
-    expiration: licencesValides[code].expiration,
-    offre
-  });
+  try {
+    await pool.query(
+      'INSERT INTO licences (code, offre, expiration, deviceId) VALUES ($1, $2, $3, $4)',
+      [code, offre, expiration, null]
+    );
+
+    return res.json({ success: true, code, offre, expiration: expiration.toISOString().split('T')[0] });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Erreur lors de la sauvegarde" });
+  }
 });
 
 // 📁 Fichier de stockage des utilisateurs (local fallback)
@@ -123,40 +131,49 @@ app.post('/login', async (req, res) => {
 });
 
 // --- Vérification du code de licence ---
-app.post('/verifier-code', (req, res) => {
+app.post('/verifier-code', async (req, res) => {
   const { code, deviceId } = req.body;
-  console.log(`📥 Code reçu : ${code} | 📱 deviceId : ${deviceId}`);
 
   if (!code || !deviceId) {
     return res.status(400).json({ success: false, message: "Code et deviceId requis" });
   }
 
-  const licence = licencesValides[code];
+  try {
+    const result = await pool.query('SELECT * FROM licences WHERE code = $1', [code]);
 
-  if (!licence || !licence.valid) {
-    return res.status(403).json({ success: false, message: "Code invalide ou expiré" });
+    if (result.rows.length === 0) {
+      return res.status(403).json({ success: false, message: "Code invalide" });
+    }
+
+    const licence = result.rows[0];
+    const expirationDate = new Date(licence.expiration);
+    const now = new Date();
+
+    if (expirationDate < now) {
+      return res.status(403).json({ success: false, message: "Code expiré" });
+    }
+
+    // Si jamais pas encore activé
+    if (!licence.deviceid) {
+      await pool.query('UPDATE licences SET deviceId = $1 WHERE code = $2', [deviceId, code]);
+      return res.json({ success: true, message: "Code activé avec succès", expiration: licence.expiration });
+    }
+
+    // Si déjà activé sur ce device
+    if (licence.deviceid === deviceId) {
+      return res.json({ success: true, message: "Code reconnu", expiration: licence.expiration });
+    }
+
+    // Utilisé sur un autre appareil
+    return res.status(403).json({
+      success: false,
+      message: "Ce code est déjà utilisé sur un autre appareil"
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Erreur serveur" });
   }
-
-  const now = new Date();
-  const expirationDate = new Date(licence.expiration);
-
-  if (expirationDate < now) {
-    return res.status(403).json({ success: false, message: "Code expiré" });
-  }
-
-  if (licence.deviceId === null) {
-    licence.deviceId = deviceId;
-    return res.json({ success: true, message: "Code activé avec succès", expiration: licence.expiration });
-  }
-
-  if (licence.deviceId === deviceId) {
-    return res.json({ success: true, message: "Code reconnu", expiration: licence.expiration });
-  }
-
-  return res.status(403).json({
-    success: false,
-    message: "Ce code a déjà été utilisé sur un autre appareil"
-  });
 });
 
 // Démarrage du serveur
