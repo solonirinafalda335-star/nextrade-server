@@ -43,7 +43,7 @@ app.post('/generer-code', async (req, res) => {
 
   try {
     await pool.query(
-      'INSERT INTO licences (code, offre, expiration, deviceId) VALUES ($1, $2, $3, $4)',
+      'INSERT INTO licences (code, plan, expiration, deviceId) VALUES ($1, $2, $3, $4)',
       [code, plan, expiration, null]
     );
 
