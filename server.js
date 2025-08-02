@@ -10,11 +10,10 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-
 app.use(express.static('public'));
 
 app.get('/admin', (req, res) => {
-  res.send('<h1>Page Admin fonctionne</h1><p>Test simple</p>');
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 // ✅ Génération de code avec stockage PostgreSQL
