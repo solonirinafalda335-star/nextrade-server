@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interface Admin - Génération de codes</title>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #f1f5f9;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    input, select {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      width: 250px;
+      background-color: #1e293b;
+      color: #f1f5f9;
+    }
+    button {
+      background: linear-gradient(to right, #38bdf8, #0ea5e9);
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 Générateur de codes - Admin NexTrade</h1>
+
+  <input id="adminKey" type="password" placeholder="Clé admin (admin123)" />
+  <select id="offre">
+    <option value="">-- Choisir une offre --</option>
+    <option value="Bronze">Bronze</option>
+    <option value="Argent">Argent</option>
+    <option value="Gold">Gold</option>
+  </select>
+  <input id="duree" type="number" placeholder="Durée en jours" />
+  <button onclick="genererCode()">Générer</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function genererCode() {
+      const adminKey = document.getElementById('adminKey').value;
+      const offre = document.getElementById('offre').value;
+      const duree = parseInt(document.getElementById('duree').value);
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = "⏳ Génération...";
+
+      const res = await fetch("http://localhost:3000/generer-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminKey, offre, duree })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        resultDiv.innerHTML = `
+          ✅ Code généré : <strong>${data.code}</strong><br>
+          Offre : ${data.offre}<br>
+          Expiration : ${data.expiration}
+        `;
+      } else {
+        resultDiv.innerHTML = `❌ Erreur : ${data.message}`;
+      }
+    }
+  </script>
+</body>
+</html>

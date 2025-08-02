@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const endpoint = enModeConnexion ? "/login" : "/register";
 
-    fetch(`http://localhost:3000${endpoint}`, {
+  fetch(`https://nextrade-server.onrender.com/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nom, motdepasse })
@@ -199,7 +199,7 @@ function validerCode(button) {
   signalDiv.style.display = "block";
 }
 
-fetch("http://localhost:3000/validate-code", {
+fetch("https://nextrade-server.onrender.com/verifier-code", {
   method: "POST",
   headers: {
     "Content-Type": "application/json"
