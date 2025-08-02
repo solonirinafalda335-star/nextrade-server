@@ -24,13 +24,13 @@ app.get('/admin', (req, res) => {
 
 // ✅ Génération de code avec stockage PostgreSQL
 app.post('/generer-code', async (req, res) => {
-  const { offre, duree, adminKey } = req.body;
+  const { plan, duree, adminKey } = req.body;
 
   if (adminKey !== 'admin123') {
     return res.status(403).json({ success: false, message: "Clé admin invalide" });
   }
 
-  if (!offre || !duree) {
+  if (!plan || !duree) {
     return res.status(400).json({ success: false, message: "Offre et durée requises" });
   }
 
@@ -44,10 +44,10 @@ app.post('/generer-code', async (req, res) => {
   try {
     await pool.query(
       'INSERT INTO licences (code, offre, expiration, deviceId) VALUES ($1, $2, $3, $4)',
-      [code, offre, expiration, null]
+      [code, plan, expiration, null]
     );
 
-    return res.json({ success: true, code, offre, expiration: expiration.toISOString().split('T')[0] });
+    return res.json({ success: true, code, plan, expiration: expiration.toISOString().split('T')[0] });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: "Erreur lors de la sauvegarde" });
