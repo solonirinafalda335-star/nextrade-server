@@ -62,30 +62,27 @@
 
   <script>
     async function genererCode() {
-      const adminKey = document.getElementById('adminKey').value;
-      const offre = document.getElementById('plan').value;
-      const duree = parseInt(document.getElementById('duree').value);
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = "⏳ Génération...";
+  const adminKey = document.getElementById('adminKey').value;
+  const offre = document.getElementById('offre').value;
+  const duree = parseInt(document.getElementById('duree').value);
+  const resultDiv = document.getElementById('result');
+  resultDiv.innerHTML = "⏳ Génération...";
 
-      const res = await fetch("https://nextrade-server.onrender.com/generer-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adminKey, offre, duree })
-      });
+  const res = await fetch("https://nextrade-server.onrender.com/generer-code", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ adminKey, offre, duree })  // <-- Ici c'est bien "offre"
+  });
 
-      const data = await res.json();
+  const data = await res.json();
 
-      if (data.success) {
-        resultDiv.innerHTML = `
-          ✅ Code généré : <strong>${data.code}</strong><br>
-          Offre : ${data.offre}<br>
-          Expiration : ${data.expiration}
-        `;
-      } else {
-        resultDiv.innerHTML = `❌ Erreur : ${data.message}`;
-      }
-    }
-  </script>
-</body>
-</html>
+  if (data.success) {
+    resultDiv.innerHTML = `
+      ✅ Code généré : <strong>${data.code}</strong><br>
+      Offre : ${data.offre}<br>
+      Expiration : ${data.expiration}
+    `;
+  } else {
+    resultDiv.innerHTML = `❌ Erreur : ${data.message}`;
+  }
+}
