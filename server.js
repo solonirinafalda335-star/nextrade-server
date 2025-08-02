@@ -24,19 +24,18 @@ app.get('/admin', (req, res) => {
 
 // ✅ Génération de code avec stockage PostgreSQL
 app.post('/generer-code', async (req, res) => {
-  const { plan, duree, adminKey } = req.body;
+  const { adminKey, offre, duree } = req.body;
 
   if (adminKey !== 'admin123') {
     return res.status(403).json({ success: false, message: "Clé admin invalide" });
   }
 
-  if (!plan || !duree) {
+  if (!offre || !duree) {
     return res.status(400).json({ success: false, message: "Offre et durée requises" });
   }
 
-  // 🔐 Générer un code aléatoire
-  const code = Math.random().toString(36).substring(2, 10).toUpperCase(); // Exemple: 8 caractères
-
+  // Le reste inchangé
+  const code = Math.random().toString(36).substring(2, 10).toUpperCase();
   const now = new Date();
   const expiration = new Date(now);
   expiration.setDate(now.getDate() + parseInt(duree));
@@ -44,10 +43,10 @@ app.post('/generer-code', async (req, res) => {
   try {
     await pool.query(
       'INSERT INTO licences (code, plan, expiration, deviceId) VALUES ($1, $2, $3, $4)',
-      [code, plan, expiration, null]
+      [code, offre, expiration, null]  // <-- Note l'usage de "offre" ici aussi
     );
 
-    return res.json({ success: true, code, plan, expiration: expiration.toISOString().split('T')[0] });
+    return res.json({ success: true, code, offre, expiration: expiration.toISOString().split('T')[0] });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: "Erreur lors de la sauvegarde" });
