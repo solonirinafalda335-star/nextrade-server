@@ -165,17 +165,6 @@ function translateTexts() {
 function validerCode(button) {
   const input = button.previousElementSibling;
   const code = input.value.trim();
-  if (code === "") {
-    alert(currentLang === "fr" ? "Veuillez entrer un code." : "Please enter a code.");
-  } else {
-    alert(currentLang === "fr" ? "Code envoyé pour vérification..." : "Code sent for verification...");
-    // Tu peux compléter ici l’appel API pour valider avec le serveur.
-  }
-}
-// Pour la validation de code d’abonnement
-function validerCode(button) {
-  const input = button.previousElementSibling;
-  const code = input.value.trim();
 
   if (code === "") {
     alert(currentLang === "fr" ? "Veuillez entrer un code." : "Please enter a code.");

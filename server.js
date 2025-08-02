@@ -3,8 +3,8 @@
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
-const { Pool } = require('pg');
 const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
