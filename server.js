@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: '*', // ⚠️ Pour tests seulement ! Restreindre en prod
+  origin: '*',
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type']
 }));
@@ -16,7 +16,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('public'));
 
-// Simple authentification admin
+// Authentification admin simple
 const ADMIN_USERNAME = "admin";
 const ADMIN_PASSWORD = "superadmin2025";
 
@@ -39,12 +39,10 @@ const connectionString = "postgresql://admin:aONttbqvjXkSHfsViJVKEnmlid1txweQ@dp
 
 const pool = new Pool({
   connectionString,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: { rejectUnauthorized: false }
 });
 
-// Génération de code avec stockage PostgreSQL
+// Générer un code de licence
 app.post('/generer-code', async (req, res) => {
   const { adminKey, offre, duree } = req.body;
 
@@ -67,14 +65,19 @@ app.post('/generer-code', async (req, res) => {
       [code, offre, expiration, null]
     );
 
-    return res.json({ success: true, code, offre, expiration: expiration.toISOString().split('T')[0] });
+    return res.json({
+      success: true,
+      code,
+      offre,
+      expiration: expiration.toISOString().split('T')[0]
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: "Erreur lors de la sauvegarde" });
   }
 });
 
-// Liste des codes générés
+// Liste des licences générées
 app.get('/liste-codes', async (req, res) => {
   try {
     const result = await pool.query('SELECT code, plan, expiration, deviceId FROM licences ORDER BY expiration DESC');
@@ -88,65 +91,6 @@ app.get('/liste-codes', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Erreur serveur lors du chargement des codes" });
-  }
-});
-
-// Liste des utilisateurs inscrits
-app.get('/liste-users', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT nom FROM users ORDER BY nom');
-    const users = result.rows.map(row => ({ nom: row.nom }));
-    res.json({ success: true, users });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Erreur serveur lors du chargement des utilisateurs" });
-  }
-});
-
-// Inscription
-app.post('/register', async (req, res) => {
-  const { username, password, nom } = req.body;  // On récupère les bons champs du corps de la requête
-
-  if (!username || !password) {  // Vérification que les champs ne sont pas vides
-    return res.status(400).json({ success: false, message: "Champs obligatoires manquants" });
-  }
-
-  try {
-    // Vérifie si l'utilisateur existe déjà dans la table "users" (colonne "username")
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-    if (result.rows.length > 0) {
-      return res.status(409).json({ success: false, message: "Ce nom d'utilisateur est déjà utilisé" });
-    }
-
-    // Insère le nouvel utilisateur dans la base, dans les colonnes "username" et "password"
-    await pool.query('INSERT INTO users (username, password, nom) VALUES ($1, $2)', [username, password, nom]);
-
-    return res.status(201).json({ success: true, message: "Utilisateur enregistré avec succès" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Erreur serveur" });
-  }
-});
-
-// Connexion utilisateur
-app.post('/login', async (req, res) => {
-  const { username, motdepasse } = req.body;
-
-  if (!username || !motdepasse) {
-    return res.status(400).json({ success: false, message: "Champs obligatoires manquants" });
-  }
-
-  try {
-    const result = await pool.query('SELECT * FROM users WHERE nom = $1', [nom]);
-
-    if (result.rows.length === 0 || result.rows[0].motdepasse !== motdepasse) {
-      return res.status(401).json({ success: false, message: "Identifiants incorrects" });
-    }
-
-    return res.status(200).json({ success: true, message: "Connexion réussie" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: "Erreur serveur" });
   }
 });
 
@@ -193,11 +137,12 @@ app.post('/verifier-code', async (req, res) => {
   }
 });
 
+// Page d’accueil
 app.get('/', (req, res) => {
   res.send('✅ NexTrade server is running');
 });
 
-// Démarrage du serveur
+// Démarrage
 app.listen(PORT, () => {
   console.log(`🚀 Serveur NexTrade actif sur http://localhost:${PORT}`);
 });
