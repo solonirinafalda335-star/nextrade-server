@@ -10,7 +10,8 @@
     "notifications"
   ],
   "host_permissions": [
-    "http://localhost:3000/*"
+  "https://nextrade-server.onrender.com/*"
+
   ],
   "action": {
     "default_popup": "popup.html",
