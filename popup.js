@@ -1,4 +1,4 @@
-const currentLang = navigator.language.startsWith('fr') ? 'fr' : 'en';
+var currentLang = typeof currentLang !== "undefined" ? currentLang : (navigator.language.startsWith('fr') ? 'fr' : 'en');
 
 document.addEventListener("DOMContentLoaded", () => {
   const nomInput = document.getElementById("nom");
@@ -43,37 +43,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Gérer le clic sur S’inscrire ou Se connecter
   inscrireBtn?.addEventListener("click", () => {
-    const nom = nomInput.value.trim();
-    const motdepasse = passInput.value.trim();
+  const nom = nomInput.value.trim();
+  const motdepasse = passInput.value.trim();
 
-    if (!nom || !motdepasse) {
-      alert(currentLang === "fr" ? "Veuillez remplir tous les champs !" : "Please fill in all fields!");
-      return;
-    }
+  if (!nom || !motdepasse) {
+    alert(currentLang === "fr" ? "Veuillez remplir tous les champs !" : "Please fill in all fields!");
+    return;
+  }
 
-    const endpoint = enModeConnexion ? "/login" : "/register";
+  const endpoint = enModeConnexion ? "/login" : "/register";
 
-  fetch(`https://nextrade-server.onrender.com/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nom, motdepasse })
-    })
-      .then(res => {
-        if (res.status === 200) {
+  fetch(`https://nextrade-server.onrender.com${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nom, motdepasse })
+  })
+    .then(res => res.json().then(data => ({ status: res.status, body: data })))
+    .then(({ status, body }) => {
+      if (status === 200) {
+        if (enModeConnexion) {
+          // Connexion réussie
           localStorage.setItem("utilisateur_nom", nom);
           inscriptionSection.style.display = "none";
           abonnementSection.style.display = "block";
           bienvenueMsg.textContent = (currentLang === "fr" ? "Bienvenue, " : "Welcome, ") + nom + " !";
         } else {
+          // Inscription réussie → passer en mode connexion
           alert(currentLang === "fr"
-            ? (enModeConnexion ? "Identifiants incorrects !" : "Nom déjà utilisé.")
-            : (enModeConnexion ? "Invalid login!" : "Username already exists."));
+            ? "Inscription réussie ! Veuillez vous connecter."
+            : "Registration successful! Please log in.");
+
+          enModeConnexion = true;
+          titreFormulaire.textContent = currentLang === "fr" ? "Connexion" : "Login";
+          inscrireBtn.textContent = currentLang === "fr" ? "Se connecter" : "Login";
+          lienConnexion.textContent = currentLang === "fr"
+            ? "Créer un nouveau compte ici"
+            : "Create a new account here";
+
+          // Vider les champs
+          nomInput.value = "";
+          passInput.value = "";
         }
-      })
-      .catch(() => {
-        alert("Erreur de connexion au serveur.");
-      });
-  });
+      } else {
+        alert(currentLang === "fr"
+          ? (enModeConnexion ? "Identifiants incorrects !" : "Nom déjà utilisé.")
+          : (enModeConnexion ? "Invalid login!" : "Username already exists."));
+      }
+    })
+    .catch(() => {
+      alert("Erreur de connexion au serveur.");
+    });
+});
 
   // Déconnexion
   logoutBtn?.addEventListener("click", () => {
@@ -170,41 +190,42 @@ function validerCode(button) {
     alert(currentLang === "fr" ? "Veuillez entrer un code." : "Please enter a code.");
     return;
   }
+
   function afficherSignaux() {
-  const signalDiv = document.getElementById("signal-container");
-  const plan = localStorage.getItem("plan_open");
+    const signalDiv = document.getElementById("signal-container");
+    const plan = localStorage.getItem("plan_open");
 
-  let signaux = [];
+    let signaux = [];
 
-  if (plan === "gold-offre") {
-    signaux = ["📈 Signal Gold 1 : EUR/USD 🔥", "📈 Signal Gold 2 : BTC/USD 💎"];
-  } else if (plan === "argent-offre") {
-    signaux = ["📉 Signal Argent 1 : GBP/USD", "📉 Signal Argent 2 : ETH/USD"];
-  } else if (plan === "bronze-offre") {
-    signaux = ["🔍 Signal Bronze 1 : USD/JPY"];
+    if (plan === "gold-offre") {
+      signaux = ["📈 Signal Gold 1 : EUR/USD 🔥", "📈 Signal Gold 2 : BTC/USD 💎"];
+    } else if (plan === "argent-offre") {
+      signaux = ["📉 Signal Argent 1 : GBP/USD", "📉 Signal Argent 2 : ETH/USD"];
+    } else if (plan === "bronze-offre") {
+      signaux = ["🔍 Signal Bronze 1 : USD/JPY"];
+    }
+
+    signalDiv.innerHTML = signaux.map(sig => `<p>${sig}</p>`).join("");
+    signalDiv.style.display = "block";
   }
 
-  signalDiv.innerHTML = signaux.map(sig => `<p>${sig}</p>`).join("");
-  signalDiv.style.display = "block";
-}
-
-fetch("https://nextrade-server.onrender.com/verifier-code", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ code })
-})
-.then(res => res.json())
-.then(data => {
-  if (data.success) {  // normalement ta réponse a un champ "success" (et non "valide")
-    alert(currentLang === "fr" ? "Code valide ! Accès aux signaux débloqué." : "Valid code! Access unlocked.");
-    afficherSignaux(); // fonction qui affiche les signaux selon l’offre
-  } else {
-    alert(currentLang === "fr" ? "Code invalide." : "Invalid code.");
-  }
-})
-.catch(() => {
-  alert("Erreur lors de la vérification du code.");
-});
+  fetch("https://nextrade-server.onrender.com/verifier-code", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ code })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(currentLang === "fr" ? "Code valide ! Accès aux signaux débloqué." : "Valid code! Access unlocked.");
+      afficherSignaux();
+    } else {
+      alert(currentLang === "fr" ? "Code invalide." : "Invalid code.");
+    }
+  })
+  .catch(() => {
+    alert("Erreur lors de la vérification du code.");
+  });
 }
