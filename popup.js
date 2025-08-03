@@ -43,10 +43,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Gérer le clic sur S’inscrire ou Se connecter
   inscrireBtn?.addEventListener("click", () => {
-  const nom = nomInput.value.trim();
+  const username = nomInput.value.trim();
   const motdepasse = passInput.value.trim();
 
-  if (!nom || !motdepasse) {
+  if (!username || !motdepasse) {
     alert(currentLang === "fr" ? "Veuillez remplir tous les champs !" : "Please fill in all fields!");
     return;
   }
@@ -208,6 +208,11 @@ function validerCode(button) {
     signalDiv.innerHTML = signaux.map(sig => `<p>${sig}</p>`).join("");
     signalDiv.style.display = "block";
   }
+let deviceId = localStorage.getItem("deviceId");
+if (!deviceId) {
+  deviceId = crypto.randomUUID();
+  localStorage.setItem("deviceId", deviceId);
+}
 
   fetch("https://nextrade-server.onrender.com/verifier-code", {
     method: "POST",

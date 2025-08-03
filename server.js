@@ -105,19 +105,22 @@ app.get('/liste-users', async (req, res) => {
 
 // Inscription
 app.post('/register', async (req, res) => {
-  const { nom, motdepasse } = req.body;
+  const { username, password } = req.body;  // On récupère les bons champs du corps de la requête
 
-  if (!nom || !motdepasse) {
+  if (!username || !password) {  // Vérification que les champs ne sont pas vides
     return res.status(400).json({ success: false, message: "Champs obligatoires manquants" });
   }
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE nom = $1', [nom]);
+    // Vérifie si l'utilisateur existe déjà dans la table "users" (colonne "username")
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     if (result.rows.length > 0) {
-      return res.status(409).json({ success: false, message: "Ce nom est déjà utilisé" });
+      return res.status(409).json({ success: false, message: "Ce nom d'utilisateur est déjà utilisé" });
     }
 
-    await pool.query('INSERT INTO users (nom, motdepasse) VALUES ($1, $2)', [nom, motdepasse]);
+    // Insère le nouvel utilisateur dans la base, dans les colonnes "username" et "password"
+    await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, password]);
+
     return res.status(201).json({ success: true, message: "Utilisateur enregistré avec succès" });
   } catch (error) {
     console.error(error);
@@ -127,9 +130,9 @@ app.post('/register', async (req, res) => {
 
 // Connexion utilisateur
 app.post('/login', async (req, res) => {
-  const { nom, motdepasse } = req.body;
+  const { username, motdepasse } = req.body;
 
-  if (!nom || !motdepasse) {
+  if (!username || !motdepasse) {
     return res.status(400).json({ success: false, message: "Champs obligatoires manquants" });
   }
 

@@ -7,11 +7,10 @@
     "storage",
     "scripting",
     "activeTab",
-    "notifications",
-    "http://localhost:3000/"
+    "notifications"
   ],
   "host_permissions": [
-    "http://localhost:3000/"
+    "http://localhost:3000/*"
   ],
   "action": {
     "default_popup": "popup.html",
