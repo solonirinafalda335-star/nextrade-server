@@ -24,30 +24,36 @@ const pool = new Pool({
 });
 
 // --- INSCRIPTION UTILISATEUR ---
-app.post('/register', async (req, res) => {
+app.post('/api/register', async (req, res) => {
   const { username, password, nom } = req.body;
 
   if (!username || !password || !nom) {
-    return res.status(400).json({ success: false, message: "Tous les champs sont obligatoires" });
+    return res.status(400).json({ success: false, message: "Tous les champs sont requis." });
   }
 
   try {
-    // Vérifie si username existe déjà
+    // Vérifie si le username existe déjà
     const userExists = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     if (userExists.rows.length > 0) {
-      return res.status(409).json({ success: false, message: "Nom d'utilisateur déjà utilisé" });
+      return res.status(409).json({ success: false, message: "Ce nom d'utilisateur est déjà utilisé." });
     }
 
-    // Stocke mot de passe en clair (NON SECURISE)
+    // Vérifie si le nom complet existe déjà
+    const nameExists = await pool.query('SELECT * FROM users WHERE nom = $1', [nom]);
+    if (nameExists.rows.length > 0) {
+      return res.status(409).json({ success: false, message: "Ce nom est déjà utilisé." });
+    }
+
+    // Insère le nouvel utilisateur
     await pool.query(
       'INSERT INTO users (username, password, nom) VALUES ($1, $2, $3)',
       [username, password, nom]
     );
 
-    res.status(201).json({ success: true, message: "Utilisateur enregistré avec succès" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Erreur serveur" });
+    res.json({ success: true, message: "Inscription réussie !" });
+  } catch (err) {
+    console.error("Erreur lors de l'inscription :", err);
+    res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 });
 
