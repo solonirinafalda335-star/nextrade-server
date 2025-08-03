@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,25 +16,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('public'));
 
-// Authentification admin simple
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "superadmin2025";
-
-app.post('/admin-login', (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    return res.json({ success: true });
-  } else {
-    return res.status(401).json({ success: false, message: "Accès refusé" });
-  }
-});
-
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-// Connexion PostgreSQL
+// PostgreSQL connexion
 const connectionString = "postgresql://admin:aONttbqvjXkSHfsViJVKEnmlid1txweQ@dpg-d1uvn9mmcj7s73etg0u0-a.oregon-postgres.render.com/mturk_ocr_server";
 
 const pool = new Pool({
@@ -42,14 +24,74 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-// Générer un code de licence
+// --- INSCRIPTION UTILISATEUR ---
+app.post('/register', async (req, res) => {
+  const { username, password, nom } = req.body;
+
+  if (!username || !password || !nom) {
+    return res.status(400).json({ success: false, message: "Tous les champs sont obligatoires" });
+  }
+
+  try {
+    // Vérifie si username existe déjà
+    const userExists = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    if (userExists.rows.length > 0) {
+      return res.status(409).json({ success: false, message: "Nom d'utilisateur déjà utilisé" });
+    }
+
+    // Hash du mot de passe
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Insérer utilisateur
+    await pool.query(
+      'INSERT INTO users (username, password, nom) VALUES ($1, $2, $3)',
+      [username, hashedPassword, nom]
+    );
+
+    res.status(201).json({ success: true, message: "Utilisateur enregistré avec succès" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Erreur serveur" });
+  }
+});
+
+// --- CONNEXION UTILISATEUR ---
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: "Champs obligatoires manquants" });
+  }
+
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ success: false, message: "Identifiants incorrects" });
+    }
+
+    const user = result.rows[0];
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ success: false, message: "Identifiants incorrects" });
+    }
+
+    res.status(200).json({ success: true, message: "Connexion réussie" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Erreur serveur" });
+  }
+});
+
+// --- GENERER CODE LICENCE ---
 app.post('/generer-code', async (req, res) => {
   const { adminKey, offre, duree } = req.body;
 
   if (adminKey !== 'admin123') {
     return res.status(403).json({ success: false, message: "Clé admin invalide" });
   }
-
   if (!offre || !duree) {
     return res.status(400).json({ success: false, message: "Offre et durée requises" });
   }
@@ -65,19 +107,19 @@ app.post('/generer-code', async (req, res) => {
       [code, offre, expiration, null]
     );
 
-    return res.json({
+    res.json({
       success: true,
       code,
       offre,
       expiration: expiration.toISOString().split('T')[0]
     });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ success: false, message: "Erreur lors de la sauvegarde" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Erreur lors de la sauvegarde" });
   }
 });
 
-// Liste des licences générées
+// --- LISTE DES CODES ---
 app.get('/liste-codes', async (req, res) => {
   try {
     const result = await pool.query('SELECT code, plan, expiration, deviceId FROM licences ORDER BY expiration DESC');
@@ -94,7 +136,7 @@ app.get('/liste-codes', async (req, res) => {
   }
 });
 
-// Vérification du code de licence
+// --- VERIFIER CODE LICENCE ---
 app.post('/verifier-code', async (req, res) => {
   const { code, deviceId } = req.body;
 
@@ -131,18 +173,18 @@ app.post('/verifier-code', async (req, res) => {
       message: "Ce code est déjà utilisé sur un autre appareil"
     });
 
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ success: false, message: "Erreur serveur" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Erreur serveur" });
   }
 });
 
-// Page d’accueil
+// --- PAGE ACCUEIL ---
 app.get('/', (req, res) => {
   res.send('✅ NexTrade server is running');
 });
 
-// Démarrage
+// --- LANCEMENT SERVEUR ---
 app.listen(PORT, () => {
   console.log(`🚀 Serveur NexTrade actif sur http://localhost:${PORT}`);
 });
