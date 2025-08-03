@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Gérer le clic sur S’inscrire ou Se connecter
   inscrireBtn?.addEventListener("click", () => {
+  const nom = document.getElementById("nom").value.trim();
   const username = nomInput.value.trim();
   const motdepasse = passInput.value.trim();
 
@@ -56,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fetch(`https://nextrade-server.onrender.com${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password: motdepasse })
+    body: JSON.stringify({ nom, username, password: motdepasse })
   })
     .then(res => res.json().then(data => ({ status: res.status, body: data })))
     .then(({ status, body }) => {

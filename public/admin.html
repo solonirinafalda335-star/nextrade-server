@@ -241,6 +241,7 @@
       try {
         const res = await fetch('https://nextrade-server.onrender.com/liste-users');
         const data = await res.json();
+        console.log(data);
 
         if (data.success) {
           if (data.users.length === 0) {

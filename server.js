@@ -105,7 +105,7 @@ app.get('/liste-users', async (req, res) => {
 
 // Inscription
 app.post('/register', async (req, res) => {
-  const { username, password } = req.body;  // On récupère les bons champs du corps de la requête
+  const { username, password, nom } = req.body;  // On récupère les bons champs du corps de la requête
 
   if (!username || !password) {  // Vérification que les champs ne sont pas vides
     return res.status(400).json({ success: false, message: "Champs obligatoires manquants" });
@@ -119,7 +119,7 @@ app.post('/register', async (req, res) => {
     }
 
     // Insère le nouvel utilisateur dans la base, dans les colonnes "username" et "password"
-    await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, password]);
+    await pool.query('INSERT INTO users (username, password, nom) VALUES ($1, $2)', [username, password, nom]);
 
     return res.status(201).json({ success: true, message: "Utilisateur enregistré avec succès" });
   } catch (error) {
