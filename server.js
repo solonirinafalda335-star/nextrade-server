@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
-const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,7 +15,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('public'));
 
-// PostgreSQL connexion
+// Connexion PostgreSQL
 const connectionString = "postgresql://admin:aONttbqvjXkSHfsViJVKEnmlid1txweQ@dpg-d1uvn9mmcj7s73etg0u0-a.oregon-postgres.render.com/mturk_ocr_server";
 
 const pool = new Pool({
@@ -39,14 +38,10 @@ app.post('/register', async (req, res) => {
       return res.status(409).json({ success: false, message: "Nom d'utilisateur déjà utilisé" });
     }
 
-    // Hash du mot de passe
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Insérer utilisateur
+    // Stocke mot de passe en clair (NON SECURISE)
     await pool.query(
       'INSERT INTO users (username, password, nom) VALUES ($1, $2, $3)',
-      [username, hashedPassword, nom]
+      [username, password, nom]
     );
 
     res.status(201).json({ success: true, message: "Utilisateur enregistré avec succès" });
@@ -67,14 +62,7 @@ app.post('/login', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
 
-    if (result.rows.length === 0) {
-      return res.status(401).json({ success: false, message: "Identifiants incorrects" });
-    }
-
-    const user = result.rows[0];
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
+    if (result.rows.length === 0 || result.rows[0].password !== password) {
       return res.status(401).json({ success: false, message: "Identifiants incorrects" });
     }
 
