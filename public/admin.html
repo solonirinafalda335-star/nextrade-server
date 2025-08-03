@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Interface Admin - Génération de codes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interface Admin - NexTrade</title>
   <style>
     body {
       background-color: #0f172a;
@@ -13,6 +13,7 @@
       flex-direction: column;
       align-items: center;
       padding: 2rem;
+      min-height: 100vh;
     }
     input, select {
       margin: 0.5rem 0;
@@ -23,6 +24,11 @@
       width: 250px;
       background-color: #1e293b;
       color: #f1f5f9;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+    input:focus, select:focus {
+      border-color: #38bdf8;
     }
     button {
       background: linear-gradient(to right, #38bdf8, #0ea5e9);
@@ -33,60 +39,239 @@
       font-size: 1rem;
       margin-top: 1rem;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
-    #result {
+    button:hover {
+      background: linear-gradient(to right, #0ea5e9, #38bdf8);
+    }
+    .section {
+      margin-top: 2rem;
+      width: 100%;
+      max-width: 700px;
+    }
+    #result, #listeCodes, #listeUsers, #loginResult {
       margin-top: 1rem;
       padding: 1rem;
       background-color: #1e293b;
       border: 1px solid #475569;
       border-radius: 12px;
       width: 100%;
-      max-width: 400px;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      min-height: 40px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+    }
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #475569;
+      text-align: left;
+      color: #f1f5f9;
+      font-size: 0.9rem;
+    }
+    th {
+      background-color: #1c2a48;
+    }
+    h1, h2 {
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <h1>🔐 Générateur de codes - Admin NexTrade</h1>
+  <h1>🔐 Interface Admin - NexTrade</h1>
 
-  <input id="adminKey" type="password" placeholder="Clé admin (admin123)" />
-  <select id="offre">
-    <option value="">-- Choisir une offre --</option>
-    <option value="Bronze">Bronze</option>
-    <option value="Argent">Argent</option>
-    <option value="Gold">Gold</option>
-  </select>
-  <input id="duree" type="number" placeholder="Durée en jours" />
-  <button onclick="genererCode()">Générer</button>
+  <!-- Formulaire de connexion admin -->
+  <div id="loginSection" class="section">
+    <input id="adminUsername" type="text" placeholder="Nom d'utilisateur admin" autocomplete="username" />
+    <input id="adminPassword" type="password" placeholder="Mot de passe admin" autocomplete="current-password" />
+    <button id="btnLogin">Se connecter</button>
+    <div id="loginResult"></div>
+  </div>
 
-  <div id="result"></div>
+  <!-- Section admin (masquée tant que pas connecté) -->
+  <div id="adminSection" class="section" style="display:none;">
+    <h2>Générer un code</h2>
+    <input id="adminKey" type="password" placeholder="Clé admin (admin123)" />
+    <select id="offre">
+      <option value="">-- Choisir une offre --</option>
+      <option value="Bronze">Bronze</option>
+      <option value="Argent">Argent</option>
+      <option value="Gold">Gold</option>
+    </select>
+    <input id="duree" type="number" placeholder="Durée en jours" min="1" />
+    <button id="btnGenerer">Générer</button>
+    <div id="result"></div>
+
+    <h2>📋 Codes générés</h2>
+    <button id="btnRefreshCodes">🔄 Actualiser les codes</button>
+    <div id="listeCodes">Chargement des codes...</div>
+
+    <h2>👤 Utilisateurs inscrits</h2>
+    <button id="btnRefreshUsers">🔄 Actualiser les utilisateurs</button>
+    <div id="listeUsers">Chargement des utilisateurs...</div>
+  </div>
 
   <script>
-    async function genererCode() {
-  const adminKey = document.getElementById('adminKey').value;
-  const offre = document.getElementById('offre').value;
-  const duree = parseInt(document.getElementById('duree').value);
-  const resultDiv = document.getElementById('result');
-  resultDiv.innerHTML = "⏳ Génération...";
+    const loginSection = document.getElementById('loginSection');
+    const adminSection = document.getElementById('adminSection');
+    const loginResult = document.getElementById('loginResult');
+    const resultDiv = document.getElementById('result');
+    const listeCodesDiv = document.getElementById('listeCodes');
+    const listeUsersDiv = document.getElementById('listeUsers');
 
-  const res = await fetch("https://nextrade-server.onrender.com/generer-code", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ adminKey, offre, duree })  // <-- Ici c'est bien "offre"
-  });
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+      const username = document.getElementById('adminUsername').value.trim();
+      const password = document.getElementById('adminPassword').value.trim();
+      loginResult.textContent = "⏳ Vérification...";
 
-  const data = await res.json();
+      if (!username || !password) {
+        loginResult.textContent = "❌ Merci de remplir tous les champs.";
+        return;
+      }
 
-  if (data.success) {
-    resultDiv.innerHTML = `
-      ✅ Code généré : <strong>${data.code}</strong><br>
-      Offre : ${data.offre}<br>
-      Expiration : ${data.expiration}
-    `;
-  } else {
-    resultDiv.innerHTML = `❌ Erreur : ${data.message}`;
-  }
-}
-    document.getElementById('btnGenerer').addEventListener('click', genererCode);
+      try {
+        const res = await fetch('https://nextrade-server.onrender.com/admin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          loginResult.textContent = "✅ Connexion réussie.";
+          loginSection.style.display = 'none';
+          adminSection.style.display = 'block';
+          chargerCodes();
+          chargerUsers();
+        } else {
+          loginResult.textContent = "❌ Identifiants incorrects.";
+        }
+      } catch (error) {
+        loginResult.textContent = "❌ Erreur serveur.";
+        console.error(error);
+      }
+    });
+
+    document.getElementById('btnGenerer').addEventListener('click', async () => {
+      const adminKey = document.getElementById('adminKey').value.trim();
+      const offre = document.getElementById('offre').value;
+      const duree = parseInt(document.getElementById('duree').value);
+      resultDiv.textContent = "⏳ Génération en cours...";
+
+      if (!adminKey || !offre || !duree || duree <= 0) {
+        resultDiv.textContent = "❌ Veuillez remplir tous les champs correctement.";
+        return;
+      }
+
+      try {
+        const res = await fetch('https://nextrade-server.onrender.com/generer-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminKey, offre, duree })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          resultDiv.innerHTML = `
+            ✅ Code généré : <strong>${data.code}</strong><br>
+            Offre : ${data.offre}<br>
+            Expiration : ${new Date(data.expiration).toLocaleDateString()}
+          `;
+          chargerCodes();
+        } else {
+          resultDiv.textContent = `❌ Erreur : ${data.message}`;
+        }
+      } catch (error) {
+        resultDiv.textContent = "❌ Erreur serveur lors de la génération.";
+        console.error(error);
+      }
+    });
+
+    document.getElementById('btnRefreshCodes').addEventListener('click', chargerCodes);
+    document.getElementById('btnRefreshUsers').addEventListener('click', chargerUsers);
+
+    async function chargerCodes() {
+      listeCodesDiv.textContent = "⏳ Chargement des codes...";
+      try {
+        const res = await fetch('https://nextrade-server.onrender.com/liste-codes');
+        const data = await res.json();
+
+        if (data.success) {
+          if (data.codes.length === 0) {
+            listeCodesDiv.textContent = "Aucun code généré.";
+            return;
+          }
+
+          listeCodesDiv.innerHTML = `
+            <table>
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Offre</th>
+                  <th>Utilisé</th>
+                  <th>Expiration</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.codes.map(code => `
+                  <tr>
+                    <td>${code.code}</td>
+                    <td>${code.plan}</td>
+                    <td>${code.is_active ? '✅ Oui' : '❌ Non'}</td>
+                    <td>${new Date(code.expiration).toLocaleDateString()}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        } else {
+          listeCodesDiv.textContent = "❌ Impossible de charger les codes.";
+        }
+      } catch (error) {
+        listeCodesDiv.textContent = "❌ Erreur lors du chargement des codes.";
+        console.error(error);
+      }
+    }
+
+    async function chargerUsers() {
+      listeUsersDiv.textContent = "⏳ Chargement des utilisateurs...";
+      try {
+        const res = await fetch('https://nextrade-server.onrender.com/liste-users');
+        const data = await res.json();
+
+        if (data.success) {
+          if (data.users.length === 0) {
+            listeUsersDiv.textContent = "Aucun utilisateur inscrit.";
+            return;
+          }
+
+          listeUsersDiv.innerHTML = `
+            <table>
+              <thead>
+                <tr>
+                  <th>Nom d'utilisateur</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.users.map(user => `
+                  <tr>
+                    <td>${user.nom}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        } else {
+          listeUsersDiv.textContent = "❌ Impossible de charger les utilisateurs.";
+        }
+      } catch (error) {
+        listeUsersDiv.textContent = "❌ Erreur lors du chargement des utilisateurs.";
+        console.error(error);
+      }
+    }
   </script>
 </body>
 </html>
