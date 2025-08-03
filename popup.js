@@ -1,7 +1,7 @@
 var currentLang = typeof currentLang !== "undefined" ? currentLang : (navigator.language.startsWith('fr') ? 'fr' : 'en');
 
 document.addEventListener("DOMContentLoaded", () => {
-  const nomInput = document.getElementById("nom");
+  const nomInput = document.getElementById("username");
   const passInput = document.getElementById("motdepasse");
   const inscrireBtn = document.getElementById("btn-inscrire");
   const logoutBtn = document.getElementById("btn-logout");
@@ -56,17 +56,17 @@ document.addEventListener("DOMContentLoaded", () => {
   fetch(`https://nextrade-server.onrender.com${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nom, motdepasse })
+    body: JSON.stringify({ username, password: motdepasse })
   })
     .then(res => res.json().then(data => ({ status: res.status, body: data })))
     .then(({ status, body }) => {
       if (status === 200) {
         if (enModeConnexion) {
           // Connexion réussie
-          localStorage.setItem("utilisateur_nom", nom);
+          localStorage.setItem("utilisateur_nom", username);
           inscriptionSection.style.display = "none";
           abonnementSection.style.display = "block";
-          bienvenueMsg.textContent = (currentLang === "fr" ? "Bienvenue, " : "Welcome, ") + nom + " !";
+          bienvenueMsg.textContent = (currentLang === "fr" ? "Bienvenue, " : "Welcome, ") + username + " !";
         } else {
           // Inscription réussie → passer en mode connexion
           alert(currentLang === "fr"
